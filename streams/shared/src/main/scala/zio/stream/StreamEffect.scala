@@ -285,7 +285,7 @@ private[stream] object StreamEffect extends Serializable {
   final def apply[R, E, A](pull: ZManaged[R, E, () => A]): StreamEffect[R, E, A] =
     new StreamEffect[R, E, A](pull)
 
-  final def fromChunk[@specialized A](c: Chunk[A]): StreamEffect[Any, Nothing, A] =
+  final def fromChunk[A](c: Chunk[A]): StreamEffect[Any, Nothing, A] =
     StreamEffect[Any, Nothing, A] {
       Managed.effectTotal {
         var index = 0
@@ -308,6 +308,15 @@ private[stream] object StreamEffect extends Serializable {
         val thunk = as.iterator
 
         () => if (thunk.hasNext) thunk.next() else end
+      }
+    }
+
+  final def fromIterator[R, E, A](iterator: ZManaged[R, E, Iterator[A]]): StreamEffect[R, E, A] =
+    StreamEffect[R, E, A] {
+      iterator.flatMap { iterator =>
+        Managed.effectTotal { () =>
+          if (iterator.hasNext) iterator.next() else end
+        }
       }
     }
 
