@@ -1,22 +1,22 @@
-package zio
+package zio.platform
 
-final class PlatformSpec(implicit ee: org.specs2.concurrent.ExecutionEnv) extends TestRuntime {
+import zio.ZIOBaseSpec
+import zio.test.Assertion._
+import zio.test._
+import zio.test.mock.EnvironmentSpec.Platform
 
-  def is = "PlatformSpec".title ^ s2"""
-        PlatformLive fatal:
-          `Platform.fatal` should identify a nonFatal exception $e1
-          `Platform.fatal` should identify a fatal exception $e2
-    """
-
-  def e1 = {
-    val nonFatal = new Exception
-
-    Platform.fatal(nonFatal) must_=== false
-  }
-
-  def e2 = {
-    val fatal = new OutOfMemoryError
-
-    Platform.fatal(fatal) must_=== true
-  }
-}
+object PlatformSpec
+  extends ZIOBaseSpec(
+    suite("PlatformSpec")(
+      suite("PlatformLive fatal:")(
+        test("Platform.fatal should identify a nonFatal exception") {
+          val nonFatal = new Exception
+          assert(Platform.fatal(nonFatal), isFalse)
+        },
+        test("Platform.fatal should identify a fatal exception") {
+          val fatal = new OutOfMemoryError
+          assert(Platform.fatal(fatal), isTrue)
+        }
+      )
+    )
+  )
